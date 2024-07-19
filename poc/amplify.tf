@@ -1,15 +1,15 @@
-data "aws_secretsmanager_secret" "github" {
-  name = "github"
+data "aws_secretsmanager_secret" "github-credentials" {
+  name = "github-credentials"
 }
 
-data "aws_secretsmanager_secret_version" "github" {
-  secret_id = data.aws_secretsmanager_secret.github.id
+data "aws_secretsmanager_secret_version" "github-credentials" {
+  secret_id = data.aws_secretsmanager_secret.github-credentials.id
 }
 
 resource "aws_amplify_app" "frontend" {
   name     = "${var.env}-${var.project}-frontend"
   repository = var.github_repository
-  access_token = jsondecode(data.aws_secretsmanager_secret_version.github.secret_string)["personal_access_token"]
+  access_token = jsondecode(data.aws_secretsmanager_secret_version.github-credentials.secret_string)["personal_access_token"]
   platform = "WEB_COMPUTE"
 
   custom_rule {

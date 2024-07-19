@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 terraform {
   required_version = "1.9.2"
   backend "s3" {
-    bucket = "poc-amplify-chat-tfstate"
+    bucket = "amplify-chat.tfstate"
     key = "poc.terraform.tfstate"
     region = "ap-northeast-1"
   }
@@ -16,7 +16,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-northeast-1"
+  region = var.region
   default_tags {
     tags = {
       "env" = var.env
