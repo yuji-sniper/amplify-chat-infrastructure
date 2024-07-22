@@ -1,6 +1,6 @@
 def handler(event, context):
     # chat_room.connection_idsに新たな入室者のconnection_idを追加
-    print(event)
+    print("room_connect!!")
     
     return {
         "statusCode": 200,
