@@ -1,4 +1,4 @@
-def lambda_handler(event, context):
+def handler(event, context):
     # chat_room.connection_idから退室者のconnection_idを削除
     print(event)
     

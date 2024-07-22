@@ -2,7 +2,7 @@ import boto3
 import json
 import os
 
-def lambda_handler(event, context):
+def handler(event, context):
     # chat_room.messagesを取得
     print(event)
     

@@ -1,4 +1,6 @@
+############################################
 # レイヤー
+############################################
 locals {
   python_packages_requirements_path = "${path.module}/files/lambda/layers/python_packages/requirements.txt"
   python_packages_output_path       = "${path.module}/outputs/lambda/layers/outputs/python_packages/output.zip"
@@ -53,7 +55,11 @@ resource "aws_s3_object" "python_packages_layer" {
 }
 
 
-# チャットルーム取得関数
+############################################
+# Lambda関数
+############################################
+
+# チャットルーム取得関数（REST API）
 data "archive_file" "get_rooms" {
   type        = "zip"
   source_dir  = "${path.module}/files/lambda/functions/get_rooms"
@@ -93,7 +99,7 @@ resource "aws_lambda_permission" "get_rooms" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.get_rooms.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/*/${aws_apigatewayv2_route.get-rooms.route_key}"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.chat-rest.id}/*/${aws_api_gateway_method.get-rooms.http_method}${aws_api_gateway_resource.get-rooms.path}"
 }
 
 resource "aws_s3_object" "get_rooms" {
@@ -103,8 +109,7 @@ resource "aws_s3_object" "get_rooms" {
   etag   = data.archive_file.get_rooms.output_base64sha256
 }
 
-
-# チャットルーム作成関数
+# チャットルーム作成関数（REST API）
 data "archive_file" "create_room" {
   type        = "zip"
   source_dir  = "${path.module}/files/lambda/functions/create_room"
@@ -144,7 +149,7 @@ resource "aws_lambda_permission" "create_room" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.create_room.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/*/${aws_apigatewayv2_route.create-room.route_key}"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.chat-rest.id}/*/${aws_api_gateway_method.create-room.http_method}${aws_api_gateway_resource.create-room.path}"
 }
 
 resource "aws_s3_object" "create_room" {
@@ -154,7 +159,7 @@ resource "aws_s3_object" "create_room" {
   etag   = data.archive_file.create_room.output_base64sha256
 }
 
-# メッセージ取得関数
+# メッセージ一覧取得関数（REST API）
 data "archive_file" "get_messages" {
   type        = "zip"
   source_dir  = "${path.module}/files/lambda/functions/get_messages"
@@ -194,7 +199,7 @@ resource "aws_lambda_permission" "get_messages" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.get_messages.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/*/${aws_apigatewayv2_route.get-messages.route_key}"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.chat-rest.id}/*/${aws_api_gateway_method.get-messages.http_method}${aws_api_gateway_resource.get-messages.path}"
 }
 
 resource "aws_s3_object" "get_messages" {
@@ -204,8 +209,7 @@ resource "aws_s3_object" "get_messages" {
   etag   = data.archive_file.get_messages.output_base64sha256
 }
 
-
-# メッセージ送信関数
+# メッセージ送信関数（WebSocket API）
 data "archive_file" "send_message" {
   type        = "zip"
   source_dir  = "${path.module}/files/lambda/functions/send_message"
@@ -255,8 +259,7 @@ resource "aws_s3_object" "send_message" {
   etag   = data.archive_file.send_message.output_base64sha256
 }
 
-
-# 部屋コネクト
+# 部屋コネクト（WebSocket API）
 data "archive_file" "room_connect" {
   type        = "zip"
   source_dir  = "${path.module}/files/lambda/functions/room_connect"
@@ -306,7 +309,7 @@ resource "aws_s3_object" "room_connect" {
   etag   = data.archive_file.room_connect.output_base64sha256
 }
 
-# 部屋ディスコネクト
+# 部屋ディスコネクト（WebSocket API）
 data "archive_file" "room_disconnect" {
   type        = "zip"
   source_dir  = "${path.module}/files/lambda/functions/room_disconnect"
