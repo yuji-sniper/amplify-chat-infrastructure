@@ -83,6 +83,7 @@ resource "aws_lambda_function" "get_rooms" {
 
   environment {
     variables = {
+      FRONTEND_ORIGIN = local.frontend_origin,
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
     }
   }
@@ -133,6 +134,7 @@ resource "aws_lambda_function" "create_room" {
 
   environment {
     variables = {
+      FRONTEND_ORIGIN = local.frontend_origin,
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
     }
   }
@@ -183,6 +185,7 @@ resource "aws_lambda_function" "get_messages" {
 
   environment {
     variables = {
+      FRONTEND_ORIGIN = local.frontend_origin,
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
     }
   }

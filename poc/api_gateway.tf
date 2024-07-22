@@ -96,10 +96,6 @@ resource "aws_apigatewayv2_stage" "chat-websocket" {
 ############################################
 # REST API
 ############################################
-locals {
-  frontend_origin = "https://${aws_amplify_branch.frontend.branch_name}.${aws_amplify_app.frontend.default_domain}"
-}
-
 resource "aws_api_gateway_rest_api" "chat-rest" {
   name = "${var.env}-${var.project}-chat-rest"
 
@@ -132,27 +128,6 @@ resource "aws_api_gateway_integration" "get-rooms" {
   connection_type = "INTERNET"
 }
 
-resource "aws_api_gateway_integration_response" "get-rooms" {
-  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
-  resource_id = aws_api_gateway_resource.get-rooms.id
-  http_method = aws_api_gateway_integration.get-rooms.http_method
-  status_code = "200"
-
-  response_templates = {
-    "application/json" = ""
-  }
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'${local.frontend_origin}'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-  }
-
-  depends_on = [
-    aws_api_gateway_integration.get-rooms
-  ]
-}
-
 resource "aws_api_gateway_method_response" "get-rooms" {
   rest_api_id = aws_api_gateway_rest_api.chat-rest.id
   resource_id = aws_api_gateway_resource.get-rooms.id
@@ -160,9 +135,7 @@ resource "aws_api_gateway_method_response" "get-rooms" {
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Origin" = true
   }
 
   response_models = {
@@ -250,27 +223,6 @@ resource "aws_api_gateway_integration" "create-room" {
   connection_type = "INTERNET"
 }
 
-resource "aws_api_gateway_integration_response" "create-room" {
-  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
-  resource_id = aws_api_gateway_resource.create-room.id
-  http_method = aws_api_gateway_integration.create-room.http_method
-  status_code = "200"
-
-  response_templates = {
-    "application/json" = ""
-  }
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'${local.frontend_origin}'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-  }
-
-  depends_on = [
-    aws_api_gateway_integration.create-room
-  ]
-}
-
 resource "aws_api_gateway_method_response" "create-room" {
   rest_api_id = aws_api_gateway_rest_api.chat-rest.id
   resource_id = aws_api_gateway_resource.create-room.id
@@ -278,9 +230,7 @@ resource "aws_api_gateway_method_response" "create-room" {
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Origin" = true
   }
 
   response_models = {
@@ -368,27 +318,6 @@ resource "aws_api_gateway_integration" "get-messages" {
   connection_type = "INTERNET"
 }
 
-resource "aws_api_gateway_integration_response" "get-messages" {
-  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
-  resource_id = aws_api_gateway_resource.get-messages.id
-  http_method = aws_api_gateway_integration.get-messages.http_method
-  status_code = "200"
-
-  response_templates = {
-    "application/json" = ""
-  }
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'${local.frontend_origin}'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-  }
-
-  depends_on = [
-    aws_api_gateway_integration.get-messages
-  ]
-}
-
 resource "aws_api_gateway_method_response" "get-messages" {
   rest_api_id = aws_api_gateway_rest_api.chat-rest.id
   resource_id = aws_api_gateway_resource.get-messages.id
@@ -396,9 +325,7 @@ resource "aws_api_gateway_method_response" "get-messages" {
   status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Origin" = true
   }
 
   response_models = {

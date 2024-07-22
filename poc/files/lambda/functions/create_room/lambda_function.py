@@ -7,6 +7,9 @@ def handler(event, context):
     
     return {
         "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": os.environ['FRONTEND_ORIGIN'],
+        },
         "body": {
             "message": "Hello from create_room!"
         }

@@ -9,6 +9,9 @@ def handler(event, context):
     
     return {
         "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": os.environ['FRONTEND_ORIGIN'],
+        },
         "body": json.dumps({
             "message": "Hello from get_rooms!",
         }),
