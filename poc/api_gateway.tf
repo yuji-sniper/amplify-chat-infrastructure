@@ -68,7 +68,6 @@ resource "aws_apigatewayv2_stage" "chat-websocket" {
   name          = "${var.env}-${var.project}-chat-websocket-poc"
   api_id        = aws_apigatewayv2_api.chat-websocket.id
   deployment_id = aws_apigatewayv2_deployment.chat-websocket.id
-  # auto_deploy   = true
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway_chat_websocket.arn
