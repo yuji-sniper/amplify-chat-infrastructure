@@ -7,10 +7,10 @@ data "aws_secretsmanager_secret_version" "github-credentials" {
 }
 
 resource "aws_amplify_app" "frontend" {
-  name     = "${var.env}-${var.project}-frontend"
-  repository = var.github_repository
+  name         = "${var.env}-${var.project}-frontend"
+  repository   = var.github_repository
   access_token = jsondecode(data.aws_secretsmanager_secret_version.github-credentials.secret_string)["personal_access_token"]
-  platform = "WEB_COMPUTE"
+  platform     = "WEB_COMPUTE"
 
   custom_rule {
     source = "/<*>"
@@ -22,8 +22,8 @@ resource "aws_amplify_app" "frontend" {
 }
 
 resource "aws_amplify_branch" "frontend" {
-  app_id = aws_amplify_app.frontend.id
-  branch_name = "master"
+  app_id            = aws_amplify_app.frontend.id
+  branch_name       = "master"
   enable_auto_build = true
-  stage = "PRODUCTION"
+  stage             = "PRODUCTION"
 }
