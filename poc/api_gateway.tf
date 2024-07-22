@@ -501,8 +501,17 @@ resource "aws_api_gateway_deployment" "chat-rest" {
 
   depends_on = [
     aws_api_gateway_integration.get-rooms,
+    aws_api_gateway_integration.get-rooms-options,
     aws_api_gateway_integration.create-room,
-    aws_api_gateway_integration.get-messages
+    aws_api_gateway_integration.create-room-options,
+    aws_api_gateway_integration.get-messages,
+    aws_api_gateway_integration.get-messages-options,
+    aws_api_gateway_method_response.get-rooms,
+    aws_api_gateway_method_response.get-rooms-options,
+    aws_api_gateway_method_response.create-room,
+    aws_api_gateway_method_response.create-room-options,
+    aws_api_gateway_method_response.get-messages,
+    aws_api_gateway_method_response.get-messages-options,
   ]
 }
 
