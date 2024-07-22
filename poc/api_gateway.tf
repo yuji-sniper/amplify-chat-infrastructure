@@ -54,16 +54,20 @@ resource "aws_apigatewayv2_route" "send-message" {
   target    = "integrations/${aws_apigatewayv2_integration.send-message.id}"
 }
 
+# デプロイ
 resource "aws_apigatewayv2_deployment" "chat-websocket" {
   api_id = aws_apigatewayv2_api.chat-websocket.id
+
   triggers = {
     redeployment = sha1(jsonencode(aws_apigatewayv2_api.chat-websocket))
   }
+
   depends_on = [
     aws_apigatewayv2_route.room-connect,
     aws_apigatewayv2_route.room-disconnect,
     aws_apigatewayv2_route.send-message
   ]
+
   lifecycle {
     create_before_destroy = true
   }
@@ -85,6 +89,14 @@ resource "aws_apigatewayv2_stage" "chat-websocket" {
       protocol       = "$context.protocol",
       responseLength = "$context.responseLength"
     })
+  }
+
+  default_route_settings {
+    data_trace_enabled = true
+    detailed_metrics_enabled = true
+    logging_level = "INFO"
+    throttling_burst_limit = 5000
+    throttling_rate_limit = 10000
   }
 
   depends_on = [

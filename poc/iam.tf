@@ -155,7 +155,7 @@ data "aws_iam_policy_document" "lambda_websocket_api" {
       "execute-api:ManageConnections",
     ]
     resources = [
-      "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/@connections/*",
+      "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/${aws_apigatewayv2_stage.chat-websocket.name}/POST/@connections/*",
     ]
   }
 }

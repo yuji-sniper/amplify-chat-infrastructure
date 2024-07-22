@@ -26,4 +26,15 @@ resource "aws_amplify_branch" "frontend" {
   branch_name       = "master"
   enable_auto_build = true
   stage             = "PRODUCTION"
+
+  environment_variables = {
+    API_DOMAIN = "PleaseChange!"
+    WEBSOCKET_ENDPOINT = "PleaseChange!"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      environment_variables,
+    ]
+  }
 }

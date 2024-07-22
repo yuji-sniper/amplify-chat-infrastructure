@@ -10,9 +10,9 @@ def handler(event, context):
         "headers": {
             "Access-Control-Allow-Origin": os.environ['FRONTEND_ORIGIN'],
         },
-        "body": {
-            "message": "Hello from create_room!"
-        }
+        "body": json.dumps({
+            "message": "Hello from create_room!",
+        }),
     }
     
     # # リクエストボディからnameを取得

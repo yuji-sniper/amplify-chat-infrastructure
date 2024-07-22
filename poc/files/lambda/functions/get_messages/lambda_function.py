@@ -11,7 +11,7 @@ def handler(event, context):
         "headers": {
             "Access-Control-Allow-Origin": os.environ['FRONTEND_ORIGIN'],
         },
-        "body": {
-            "message": "Hello from get_messages!"
-        }
+        "body": json.dumps({
+            "message": "Hello from get_messages!",
+        }),
     }
