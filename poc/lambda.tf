@@ -236,7 +236,6 @@ resource "aws_lambda_function" "send_message" {
 
   environment {
     variables = {
-      CONNECTION_ENDPOINT = "PleaseChange!",
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
     }
   }
