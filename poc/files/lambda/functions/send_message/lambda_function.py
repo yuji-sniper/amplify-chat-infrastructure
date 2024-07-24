@@ -31,16 +31,6 @@ def handler(event, context):
             'created_at': datetime.now().isoformat(),
         }
         
-        # メッセージを追加
-        if 'messages' not in room:
-            room['messages'] = []
-        room['messages'].append(message)
-        rooms_table.put_item(
-            Item=room
-        )
-        
-        print(f"Message created.")
-        
         # メッセージを送信
         connection_endpoint = f"https://{event['requestContext']['domainName']}/{event['requestContext']['stage']}"
         print(f"Connection endpoint: {connection_endpoint}")
