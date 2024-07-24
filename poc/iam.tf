@@ -67,11 +67,6 @@ resource "aws_iam_role" "lambda_create_room" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-resource "aws_iam_role" "lambda_get_messages" {
-  name               = "${var.env}-${var.project}-lambda-get-messages"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
-}
-
 resource "aws_iam_role" "lambda_delete_connection" {
   name               = "${var.env}-${var.project}-lambda-delete-connection"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
@@ -121,7 +116,6 @@ resource "aws_iam_policy_attachment" "lambda_log" {
   roles = [
     aws_iam_role.lambda_get_rooms.name,
     aws_iam_role.lambda_create_room.name,
-    aws_iam_role.lambda_get_messages.name,
     aws_iam_role.lambda_delete_connection.name,
     aws_iam_role.lambda_room_connect.name,
     aws_iam_role.lambda_room_disconnect.name,
@@ -153,7 +147,6 @@ resource "aws_iam_policy_attachment" "lambda_dynamodb" {
   roles = [
     aws_iam_role.lambda_get_rooms.name,
     aws_iam_role.lambda_create_room.name,
-    aws_iam_role.lambda_get_messages.name,
     aws_iam_role.lambda_delete_connection.name,
     aws_iam_role.lambda_room_connect.name,
     aws_iam_role.lambda_room_disconnect.name,

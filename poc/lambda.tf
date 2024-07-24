@@ -161,56 +161,56 @@ resource "aws_s3_object" "create_room" {
   etag   = data.archive_file.create_room.output_base64sha256
 }
 
-# メッセージ一覧取得関数（REST API）
-data "archive_file" "get_messages" {
-  type        = "zip"
-  source_dir  = "${path.module}/files/lambda/functions/get_messages"
-  output_path = "${path.module}/outputs/lambda/functions/get_messages.zip"
-}
+# # メッセージ一覧取得関数（REST API）
+# data "archive_file" "get_messages" {
+#   type        = "zip"
+#   source_dir  = "${path.module}/files/lambda/functions/get_messages"
+#   output_path = "${path.module}/outputs/lambda/functions/get_messages.zip"
+# }
 
-resource "aws_lambda_function" "get_messages" {
-  function_name    = "${var.env}-${var.project}-get-messages"
-  role             = aws_iam_role.lambda_get_messages.arn
-  handler          = "lambda_function.handler"
-  s3_bucket        = aws_s3_bucket.lambda_functions.id
-  s3_key           = aws_s3_object.get_messages.key
-  source_code_hash = data.archive_file.get_messages.output_base64sha256
-  runtime          = "python3.12"
-  timeout          = 30
-  memory_size      = 128
+# resource "aws_lambda_function" "get_messages" {
+#   function_name    = "${var.env}-${var.project}-get-messages"
+#   role             = aws_iam_role.lambda_get_messages.arn
+#   handler          = "lambda_function.handler"
+#   s3_bucket        = aws_s3_bucket.lambda_functions.id
+#   s3_key           = aws_s3_object.get_messages.key
+#   source_code_hash = data.archive_file.get_messages.output_base64sha256
+#   runtime          = "python3.12"
+#   timeout          = 30
+#   memory_size      = 128
 
-  layers = [
-    aws_lambda_layer_version.python_packages.arn
-  ]
+#   layers = [
+#     aws_lambda_layer_version.python_packages.arn
+#   ]
 
-  environment {
-    variables = {
-      FRONTEND_ORIGIN = local.frontend_origin,
-      DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
-    }
-  }
+#   environment {
+#     variables = {
+#       FRONTEND_ORIGIN = local.frontend_origin,
+#       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
+#     }
+#   }
 
-  lifecycle {
-    ignore_changes = [
-      environment
-    ]
-  }
-}
+#   lifecycle {
+#     ignore_changes = [
+#       environment
+#     ]
+#   }
+# }
 
-resource "aws_lambda_permission" "get_messages" {
-  statement_id  = "AllowExecutionFromAPIGatewayGetMessages"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.get_messages.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.chat-rest.id}/*/${aws_api_gateway_method.get-messages.http_method}${aws_api_gateway_resource.get-messages.path}"
-}
+# resource "aws_lambda_permission" "get_messages" {
+#   statement_id  = "AllowExecutionFromAPIGatewayGetMessages"
+#   action        = "lambda:InvokeFunction"
+#   function_name = aws_lambda_function.get_messages.function_name
+#   principal     = "apigateway.amazonaws.com"
+#   source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.chat-rest.id}/*/${aws_api_gateway_method.get-messages.http_method}${aws_api_gateway_resource.get-messages.path}"
+# }
 
-resource "aws_s3_object" "get_messages" {
-  bucket = aws_s3_bucket.lambda_functions.id
-  key    = "get_messages.zip"
-  source = data.archive_file.get_messages.output_path
-  etag   = data.archive_file.get_messages.output_base64sha256
-}
+# resource "aws_s3_object" "get_messages" {
+#   bucket = aws_s3_bucket.lambda_functions.id
+#   key    = "get_messages.zip"
+#   source = data.archive_file.get_messages.output_path
+#   etag   = data.archive_file.get_messages.output_base64sha256
+# }
 
 # コネクション削除関数（REST API）
 data "archive_file" "delete_connection" {

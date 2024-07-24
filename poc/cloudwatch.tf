@@ -20,7 +20,6 @@ resource "aws_cloudwatch_log_group" "api_gateway_chat_rest" {
 # Lambda
 locals {
   lambda_functions = toset([
-    aws_lambda_function.get_messages.function_name,
     aws_lambda_function.create_room.function_name,
     aws_lambda_function.get_rooms.function_name,
     aws_lambda_function.delete_connection.function_name,
