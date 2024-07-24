@@ -30,14 +30,6 @@ def handler(event, context):
         rooms_table.put_item(
             Item=room
         )
-        
-        # 部屋のメッセージ全削除
-        rooms_table.update_item(
-            Key={
-                'id': params['room_id'],
-            },
-            UpdateExpression="REMOVE messages",
-        )
 
         return {
             "statusCode": 200,
