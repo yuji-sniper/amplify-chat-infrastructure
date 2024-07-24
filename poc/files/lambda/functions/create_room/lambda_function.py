@@ -1,7 +1,10 @@
 import boto3
 import json
+import logging
 import os
 import uuid
+
+logging.basicConfig(level=logging.INFO)
 
 def handler(event, context):
     headers = {
@@ -32,12 +35,12 @@ def handler(event, context):
             "statusCode": 200,
             "headers": headers,
             "body": json.dumps({
-                "message": "Room created.",
-                "room_id": room_id,
+                "id": room_id,
+                "name": name,
             }),
         }
     except Exception as e:
-        print(e)
+        logging.error("Error", exc_info=True)
         
         return {
             "statusCode": 500,

@@ -23,9 +23,11 @@ locals {
     aws_lambda_function.get_messages.function_name,
     aws_lambda_function.create_room.function_name,
     aws_lambda_function.get_rooms.function_name,
-    aws_lambda_function.send_message.function_name,
+    aws_lambda_function.delete_connection.function_name,
     aws_lambda_function.room_connect.function_name,
     aws_lambda_function.room_disconnect.function_name,
+    aws_lambda_function.send_message.function_name,
+    aws_lambda_function.send_connection_id.function_name,
   ])
 }
 

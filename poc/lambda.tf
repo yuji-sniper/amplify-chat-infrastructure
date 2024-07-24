@@ -212,20 +212,20 @@ resource "aws_s3_object" "get_messages" {
   etag   = data.archive_file.get_messages.output_base64sha256
 }
 
-# メッセージ送信関数（WebSocket API）
-data "archive_file" "send_message" {
+# コネクション削除関数（REST API）
+data "archive_file" "delete_connection" {
   type        = "zip"
-  source_dir  = "${path.module}/files/lambda/functions/send_message"
-  output_path = "${path.module}/outputs/lambda/functions/send_message.zip"
+  source_dir  = "${path.module}/files/lambda/functions/delete_connection"
+  output_path = "${path.module}/outputs/lambda/functions/delete_connection.zip"
 }
 
-resource "aws_lambda_function" "send_message" {
-  function_name    = "${var.env}-${var.project}-send-message"
-  role             = aws_iam_role.lambda_send_message.arn
+resource "aws_lambda_function" "delete_connection" {
+  function_name    = "${var.env}-${var.project}-delete-connection"
+  role             = aws_iam_role.lambda_delete_connection.arn
   handler          = "lambda_function.handler"
   s3_bucket        = aws_s3_bucket.lambda_functions.id
-  s3_key           = aws_s3_object.send_message.key
-  source_code_hash = data.archive_file.send_message.output_base64sha256
+  s3_key           = aws_s3_object.delete_connection.key
+  source_code_hash = data.archive_file.delete_connection.output_base64sha256
   runtime          = "python3.12"
   timeout          = 30
   memory_size      = 128
@@ -236,6 +236,7 @@ resource "aws_lambda_function" "send_message" {
 
   environment {
     variables = {
+      FRONTEND_ORIGIN = local.frontend_origin,
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
     }
   }
@@ -247,19 +248,19 @@ resource "aws_lambda_function" "send_message" {
   }
 }
 
-resource "aws_lambda_permission" "send_message" {
-  statement_id  = "AllowExecutionFromAPIGatewaySendMessage"
+resource "aws_lambda_permission" "delete_connection" {
+  statement_id  = "AllowExecutionFromAPIGatewayDeleteConnection"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.send_message.function_name
+  function_name = aws_lambda_function.delete_connection.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/*/${aws_apigatewayv2_route.send-message.route_key}"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.chat-rest.id}/*/${aws_api_gateway_method.delete-connection.http_method}${aws_api_gateway_resource.delete-connection.path}"
 }
 
-resource "aws_s3_object" "send_message" {
+resource "aws_s3_object" "delete_connection" {
   bucket = aws_s3_bucket.lambda_functions.id
-  key    = "send_message.zip"
-  source = data.archive_file.send_message.output_path
-  etag   = data.archive_file.send_message.output_base64sha256
+  key    = "delete_connection.zip"
+  source = data.archive_file.delete_connection.output_path
+  etag   = data.archive_file.delete_connection.output_base64sha256
 }
 
 # 部屋コネクト（WebSocket API）
@@ -286,7 +287,7 @@ resource "aws_lambda_function" "room_connect" {
 
   environment {
     variables = {
-      DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
+      DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name,
     }
   }
 
@@ -336,7 +337,7 @@ resource "aws_lambda_function" "room_disconnect" {
 
   environment {
     variables = {
-      DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
+      DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name,
     }
   }
 
@@ -360,4 +361,104 @@ resource "aws_s3_object" "room_disconnect" {
   key    = "room_disconnect.zip"
   source = data.archive_file.room_disconnect.output_path
   etag   = data.archive_file.room_disconnect.output_base64sha256
+}
+
+# メッセージ送信関数（WebSocket API）
+data "archive_file" "send_message" {
+  type        = "zip"
+  source_dir  = "${path.module}/files/lambda/functions/send_message"
+  output_path = "${path.module}/outputs/lambda/functions/send_message.zip"
+}
+
+resource "aws_lambda_function" "send_message" {
+  function_name    = "${var.env}-${var.project}-send-message"
+  role             = aws_iam_role.lambda_send_message.arn
+  handler          = "lambda_function.handler"
+  s3_bucket        = aws_s3_bucket.lambda_functions.id
+  s3_key           = aws_s3_object.send_message.key
+  source_code_hash = data.archive_file.send_message.output_base64sha256
+  runtime          = "python3.12"
+  timeout          = 30
+  memory_size      = 128
+
+  layers = [
+    aws_lambda_layer_version.python_packages.arn
+  ]
+
+  environment {
+    variables = {
+      DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name,
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      environment
+    ]
+  }
+}
+
+resource "aws_lambda_permission" "send_message" {
+  statement_id  = "AllowExecutionFromAPIGatewaySendMessage"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.send_message.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/*/${aws_apigatewayv2_route.send-message.route_key}"
+}
+
+resource "aws_s3_object" "send_message" {
+  bucket = aws_s3_bucket.lambda_functions.id
+  key    = "send_message.zip"
+  source = data.archive_file.send_message.output_path
+  etag   = data.archive_file.send_message.output_base64sha256
+}
+
+# コネクションID送信関数（WebSocket API）
+data "archive_file" "send_connection_id" {
+  type        = "zip"
+  source_dir  = "${path.module}/files/lambda/functions/send_connection_id"
+  output_path = "${path.module}/outputs/lambda/functions/send_connection_id.zip"
+}
+
+resource "aws_lambda_function" "send_connection_id" {
+  function_name    = "${var.env}-${var.project}-send-connection-id"
+  role             = aws_iam_role.lambda_send_connection_id.arn
+  handler          = "lambda_function.handler"
+  s3_bucket        = aws_s3_bucket.lambda_functions.id
+  s3_key           = aws_s3_object.send_connection_id.key
+  source_code_hash = data.archive_file.send_connection_id.output_base64sha256
+  runtime          = "python3.12"
+  timeout          = 30
+  memory_size      = 128
+
+  layers = [
+    aws_lambda_layer_version.python_packages.arn
+  ]
+
+  environment {
+    variables = {
+      DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name,
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      environment
+    ]
+  }
+}
+
+resource "aws_lambda_permission" "send_connection_id" {
+  statement_id  = "AllowExecutionFromAPIGatewaySendConnectionId"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.send_connection_id.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.chat-websocket.id}/*/${aws_apigatewayv2_route.send-connection-id.route_key}"
+}
+
+resource "aws_s3_object" "send_connection_id" {
+  bucket = aws_s3_bucket.lambda_functions.id
+  key    = "send_connection_id.zip"
+  source = data.archive_file.send_connection_id.output_path
+  etag   = data.archive_file.send_connection_id.output_base64sha256
 }

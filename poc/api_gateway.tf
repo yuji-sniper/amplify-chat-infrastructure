@@ -54,6 +54,20 @@ resource "aws_apigatewayv2_route" "send-message" {
   target    = "integrations/${aws_apigatewayv2_integration.send-message.id}"
 }
 
+# コネクションID送信
+resource "aws_apigatewayv2_integration" "send-connection-id" {
+  api_id             = aws_apigatewayv2_api.chat-websocket.id
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+  integration_uri    = aws_lambda_function.send_connection_id.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "send-connection-id" {
+  api_id    = aws_apigatewayv2_api.chat-websocket.id
+  route_key = "sendConnectionId"
+  target    = "integrations/${aws_apigatewayv2_integration.send-connection-id.id}"
+}
+
 # デプロイ
 resource "aws_apigatewayv2_deployment" "chat-websocket" {
   api_id = aws_apigatewayv2_api.chat-websocket.id
@@ -65,7 +79,8 @@ resource "aws_apigatewayv2_deployment" "chat-websocket" {
   depends_on = [
     aws_apigatewayv2_route.room-connect,
     aws_apigatewayv2_route.room-disconnect,
-    aws_apigatewayv2_route.send-message
+    aws_apigatewayv2_route.send-message,
+    aws_apigatewayv2_route.send-connection-id
   ]
 
   lifecycle {
@@ -181,7 +196,7 @@ resource "aws_api_gateway_integration_response" "get-rooms-options" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = "'${local.frontend_origin}'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,DELETE,OPTIONS'",
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
   }
 
@@ -276,7 +291,7 @@ resource "aws_api_gateway_integration_response" "create-room-options" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = "'${local.frontend_origin}'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,DELETE,OPTIONS'",
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
   }
 
@@ -371,7 +386,7 @@ resource "aws_api_gateway_integration_response" "get-messages-options" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = "'${local.frontend_origin}'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,DELETE,OPTIONS'",
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
   }
 
@@ -388,6 +403,101 @@ resource "aws_api_gateway_method_response" "get-messages-options" {
   rest_api_id = aws_api_gateway_rest_api.chat-rest.id
   resource_id = aws_api_gateway_resource.get-messages.id
   http_method = aws_api_gateway_method.get-messages-options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Headers" = true
+  }
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+# コネクション削除
+resource "aws_api_gateway_resource" "delete-connection" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  parent_id   = aws_api_gateway_rest_api.chat-rest.root_resource_id
+  path_part   = "connection"
+}
+
+resource "aws_api_gateway_method" "delete-connection" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  resource_id = aws_api_gateway_resource.delete-connection.id
+  http_method = "DELETE"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "delete-connection" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  resource_id = aws_api_gateway_resource.delete-connection.id
+  http_method = aws_api_gateway_method.delete-connection.http_method
+  type        = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri         = aws_lambda_function.delete_connection.invoke_arn
+  connection_type = "INTERNET"
+}
+
+resource "aws_api_gateway_method_response" "delete-connection" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  resource_id = aws_api_gateway_resource.delete-connection.id
+  http_method = aws_api_gateway_method.delete-connection.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+resource "aws_api_gateway_method" "delete-connection-options" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  resource_id = aws_api_gateway_resource.delete-connection.id
+  http_method = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "delete-connection-options" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  resource_id = aws_api_gateway_resource.delete-connection.id
+  http_method = aws_api_gateway_method.delete-connection-options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{ \"statusCode\": 200 }"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "delete-connection-options" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  resource_id = aws_api_gateway_resource.delete-connection.id
+  http_method = aws_api_gateway_integration.delete-connection-options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'${local.frontend_origin}'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,DELETE,OPTIONS'",
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+  }
+
+  response_templates = {
+    "application/json" = ""
+  }
+
+  depends_on = [
+    aws_api_gateway_integration.delete-connection-options
+  ]
+}
+
+resource "aws_api_gateway_method_response" "delete-connection-options" {
+  rest_api_id = aws_api_gateway_rest_api.chat-rest.id
+  resource_id = aws_api_gateway_resource.delete-connection.id
+  http_method = aws_api_gateway_method.delete-connection-options.http_method
   status_code = "200"
 
   response_parameters = {
@@ -435,7 +545,12 @@ resource "aws_api_gateway_deployment" "chat-rest" {
   rest_api_id = aws_api_gateway_rest_api.chat-rest.id
 
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.chat-rest))
+    redeployment = sha1(join(",", [
+      jsonencode(aws_api_gateway_resource.get-rooms),
+      jsonencode(aws_api_gateway_resource.create-room),
+      jsonencode(aws_api_gateway_resource.get-messages),
+      jsonencode(aws_api_gateway_resource.delete-connection),
+    ]))
   }
 
   depends_on = [
@@ -445,12 +560,15 @@ resource "aws_api_gateway_deployment" "chat-rest" {
     aws_api_gateway_integration.create-room-options,
     aws_api_gateway_integration.get-messages,
     aws_api_gateway_integration.get-messages-options,
+    aws_api_gateway_integration.delete-connection,
     aws_api_gateway_method_response.get-rooms,
     aws_api_gateway_method_response.get-rooms-options,
     aws_api_gateway_method_response.create-room,
     aws_api_gateway_method_response.create-room-options,
     aws_api_gateway_method_response.get-messages,
     aws_api_gateway_method_response.get-messages-options,
+    aws_api_gateway_method_response.delete-connection,
+    aws_api_gateway_method_response.delete-connection-options,
   ]
 }
 

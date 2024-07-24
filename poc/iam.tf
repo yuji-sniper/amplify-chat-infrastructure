@@ -72,8 +72,8 @@ resource "aws_iam_role" "lambda_get_messages" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-resource "aws_iam_role" "lambda_send_message" {
-  name               = "${var.env}-${var.project}-lambda-send-message"
+resource "aws_iam_role" "lambda_delete_connection" {
+  name               = "${var.env}-${var.project}-lambda-delete-connection"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
@@ -84,6 +84,16 @@ resource "aws_iam_role" "lambda_room_connect" {
 
 resource "aws_iam_role" "lambda_room_disconnect" {
   name               = "${var.env}-${var.project}-lambda-room-disconnect"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role" "lambda_send_message" {
+  name               = "${var.env}-${var.project}-lambda-send-message"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role" "lambda_send_connection_id" {
+  name               = "${var.env}-${var.project}-lambda-send-connection-id"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
@@ -112,9 +122,11 @@ resource "aws_iam_policy_attachment" "lambda_log" {
     aws_iam_role.lambda_get_rooms.name,
     aws_iam_role.lambda_create_room.name,
     aws_iam_role.lambda_get_messages.name,
-    aws_iam_role.lambda_send_message.name,
+    aws_iam_role.lambda_delete_connection.name,
     aws_iam_role.lambda_room_connect.name,
     aws_iam_role.lambda_room_disconnect.name,
+    aws_iam_role.lambda_send_message.name,
+    aws_iam_role.lambda_send_connection_id.name,
   ]
 }
 
@@ -142,9 +154,11 @@ resource "aws_iam_policy_attachment" "lambda_dynamodb" {
     aws_iam_role.lambda_get_rooms.name,
     aws_iam_role.lambda_create_room.name,
     aws_iam_role.lambda_get_messages.name,
-    aws_iam_role.lambda_send_message.name,
+    aws_iam_role.lambda_delete_connection.name,
     aws_iam_role.lambda_room_connect.name,
     aws_iam_role.lambda_room_disconnect.name,
+    aws_iam_role.lambda_send_message.name,
+    aws_iam_role.lambda_send_connection_id.name,
   ]
 }
 
@@ -170,5 +184,6 @@ resource "aws_iam_policy_attachment" "lambda_websocket_api" {
   policy_arn = aws_iam_policy.lambda_websocket_api.arn
   roles = [
     aws_iam_role.lambda_send_message.name,
+    aws_iam_role.lambda_send_connection_id.name,
   ]
 }

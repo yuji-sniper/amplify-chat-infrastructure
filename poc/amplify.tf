@@ -28,8 +28,8 @@ resource "aws_amplify_branch" "frontend" {
   stage             = "PRODUCTION"
 
   environment_variables = {
-    API_DOMAIN = "PleaseChange!"
-    WEBSOCKET_ENDPOINT = "PleaseChange!"
+    NEXT_PUBLIC_API_DOMAIN = "PleaseChange!"
+    NEXT_PUBLIC_WEBSOCKET_ENDPOINT = "PleaseChange!"
   }
 
   lifecycle {
