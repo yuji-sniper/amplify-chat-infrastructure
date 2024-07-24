@@ -22,6 +22,7 @@ locals {
   lambda_functions = toset([
     aws_lambda_function.create_room.function_name,
     aws_lambda_function.get_rooms.function_name,
+    aws_lambda_function.get_room.function_name,
     aws_lambda_function.delete_connection.function_name,
     aws_lambda_function.room_connect.function_name,
     aws_lambda_function.room_disconnect.function_name,
