@@ -28,4 +28,4 @@ https://github.com/yuji-sniper/amplify-chat-front
 ![チャットルーム一覧](./images/readme/rooms.png "チャットルーム一覧")
 
 ↓リアルタイムチャット
-![チャット](./images/readme/chat.gif "チャット")
+![チャット](./images/readme/chat-message.gif "チャット")
