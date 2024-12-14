@@ -8,35 +8,18 @@ locals {
   python_packages_source_dir        = "${path.module}/outputs/lambda/layers/sources/python_packages"
 }
 
-resource "null_resource" "prepare_python_packages" {
-  triggers = {
-    "requirements_diff" = filebase64(local.python_packages_requirements_path)
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOF
-      rm -rf ${local.python_packages_source_dir}/python &&
-      mkdir -p ${local.python_packages_source_dir}/python &&
-      docker pull python:3.12-slim &&
-      docker run --rm -v $(pwd)/${local.python_packages_requirements_path}:/app/requirements.txt \
-      -v $(pwd)/${local.python_packages_source_dir}/python:/app/python \
-      python:3.12-slim /bin/sh -c "
-        pip install -r /app/requirements.txt -t /app/python
-      "
-    EOF
-
-    on_failure = fail
-  }
+data "external" "prepare_python_packages" {
+  program = [
+    "${path.module}/scripts/prepare_python_packages.sh",
+    "3.12",
+    abspath(local.python_packages_requirements_path),
+  ]
 }
 
 data "archive_file" "python_packages_layer" {
   type        = "zip"
-  source_dir  = local.python_packages_source_dir
+  source_dir  = data.external.prepare_python_packages.result["path"]
   output_path = local.python_packages_output_path
-
-  depends_on = [
-    null_resource.prepare_python_packages
-  ]
 }
 
 resource "aws_lambda_layer_version" "python_packages" {
@@ -45,6 +28,10 @@ resource "aws_lambda_layer_version" "python_packages" {
   s3_key              = aws_s3_object.python_packages_layer.key
   source_code_hash    = data.archive_file.python_packages_layer.output_md5
   compatible_runtimes = ["python3.12"]
+
+  depends_on = [
+    aws_s3_object.python_packages_layer
+  ]
 }
 
 resource "aws_s3_object" "python_packages_layer" {
@@ -87,6 +74,10 @@ resource "aws_lambda_function" "get_rooms" {
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
     }
   }
+
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
 
   lifecycle {
     ignore_changes = [
@@ -139,6 +130,10 @@ resource "aws_lambda_function" "get_room" {
     }
   }
 
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
+
   lifecycle {
     ignore_changes = [
       environment
@@ -189,6 +184,10 @@ resource "aws_lambda_function" "create_room" {
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name
     }
   }
+
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
 
   lifecycle {
     ignore_changes = [
@@ -241,6 +240,10 @@ resource "aws_lambda_function" "delete_connection" {
     }
   }
 
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
+
   lifecycle {
     ignore_changes = [
       environment
@@ -290,6 +293,10 @@ resource "aws_lambda_function" "room_connect" {
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name,
     }
   }
+
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
 
   lifecycle {
     ignore_changes = [
@@ -341,6 +348,10 @@ resource "aws_lambda_function" "room_disconnect" {
     }
   }
 
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
+
   lifecycle {
     ignore_changes = [
       environment
@@ -391,6 +402,10 @@ resource "aws_lambda_function" "send_message" {
     }
   }
 
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
+
   lifecycle {
     ignore_changes = [
       environment
@@ -440,6 +455,10 @@ resource "aws_lambda_function" "send_connection_id" {
       DYNAMO_CHAT_ROOMS_TABLE = aws_dynamodb_table.chat_rooms.name,
     }
   }
+
+  depends_on = [
+    aws_lambda_layer_version.python_packages
+  ]
 
   lifecycle {
     ignore_changes = [
