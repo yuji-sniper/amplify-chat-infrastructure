@@ -76,13 +76,6 @@ resource "aws_apigatewayv2_deployment" "chat-websocket" {
     redeployment = sha1(jsonencode(aws_apigatewayv2_api.chat-websocket))
   }
 
-  depends_on = [
-    aws_apigatewayv2_route.room-connect,
-    aws_apigatewayv2_route.room-disconnect,
-    aws_apigatewayv2_route.send-message,
-    aws_apigatewayv2_route.send-connection-id
-  ]
-
   lifecycle {
     create_before_destroy = true
   }
